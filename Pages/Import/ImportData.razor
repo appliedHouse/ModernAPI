@@ -1,0 +1,91 @@
+﻿@page "/Import"
+@using System.Data
+
+@inject IJSRuntime js
+
+@code {
+    private async Task TriggerFileInput()
+    {
+        await js.InvokeVoidAsync("triggerFileUpload");
+    }
+}
+
+<h3>Import</h3>
+
+@if (!MyModel.IsExcelLoaded)
+{
+    <div class="container">
+        <div class="d-flex flex-row mb-3">
+            <div class="p-2">
+                <button class="btn btn-primary w1" disabled="@(MyModel.IsExcelLoaded ? true : MyModel.ShowSpinner)"
+                title="Upload Excel file" @onclick="TriggerFileInput">
+                    Upload Excel file
+                </button>
+                <InputFile id="inputFile" class="d-none" OnChange="GetExcelFile" />
+
+
+            </div>
+            <div class="p-2">
+                <label>@MyModel.ExcelFileName</label>
+            </div>
+
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="p-2">
+        <label>Excel File has been loaded successfully.</label>
+    </div>
+}
+
+
+@if (MyModel.ShowSpinner)
+{
+    <button class="btn btn-primary" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span class="visually-hidden">@MyModel.SpinnerMessage</span>
+    </button>
+}
+else
+{
+    @if (MyModel.IsError)
+    {
+        <div class="alert alert-danger ">
+            @MyModel.ErrorMessage
+        </div>
+    }
+    else
+    {
+        if(MyModel.IsDataTableLoaded)
+        {
+            <div class="container">
+                <table class="table-assets">
+                    <thead>
+                        <tr>
+                            <th style="width:20%">Tag ID</th>
+                            <th style="width:20%">Name</th>
+                            <th style="width:40%">Location</th>
+                            <th style="width:20%">Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(MyModel.TB_Assets is not null)
+                        {
+                            foreach (DataRow Row in MyModel.TB_Assets.Rows)
+                            {
+                                <tr>
+                                    <td>@Row["TagID"]</td>
+                                    <td>@Row["AssetName"]</td>
+                                    <td>@Row["LocationName"]</td>
+                                    <td>@Row["ClassCode"]</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+}

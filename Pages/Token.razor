@@ -1,0 +1,42 @@
+﻿@page "/Token"
+@using ModernAPI.Data
+@inject NavigationManager NavManager
+@inject IConfiguration _Config
+
+
+<h3>Token</h3>
+
+@code {
+    public IConfiguration Config { get; set; }
+    public TokenClass TokenService { get; set; }
+    public string TokenText { get; set; } = "No Toke";
+
+    protected override void OnInitialized()
+    {
+        Config = _Config;
+        TokenService = new TokenClass(Config);
+
+    }
+
+    public async Task GetToken()
+    {
+        TokenText = await TokenService.GetToken();
+    }
+
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <button class="btn btn-primary" @onclick="GetToken">Get Token</button>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="w-75 text-wrap text-break border p-2">
+                <p class="m-0">@TokenText</p>
+            </div>
+        </div>
+    </div>
+</div>
+

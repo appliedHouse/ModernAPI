@@ -1,0 +1,103 @@
+﻿@page "/Assets"
+@using ModernAPI.Data
+@inject IConfiguration _Config
+@inject NavigationManager NavManager
+
+
+@code {
+    public IConfiguration Config { get; set; }
+
+
+    protected override void OnInitialized()
+    {
+        Config = _Config;
+        //TokenClass TokenService = new TokenClass(Config);
+        //TokenText = TokenService.GetToken().Result;
+    }
+
+
+}
+
+
+<h2>ASSETS</h2>
+
+<EditForm Model="MyModal">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="locationID" class="form-control" @bind-Value="MyModal.locationID" />
+                    <label for="locationID">Location ID</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="classID" class="form-control" @bind-Value="MyModal.ClassID" />
+                    <label for="classID">Class ID</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="employeeID" class="form-control" @bind-Value="MyModal.EmployeeID" />
+                    <label for="employeeID">Employee ID</label>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-1">
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputDate id="SyncDate" class="form-control" @bind-Value="MyModal.LastSyncDate" />
+                    <label for="SyncDate">Last Sync Date</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="pageNum" class="form-control" @bind-Value="MyModal.PageNum" />
+                    <label for="pageNum">Page No.</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="pageSize" class="form-control" @bind-Value="MyModal.PageSize" />
+                    <label for="pageSize">Page Size</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <button class="btn btn-success" @onclick="GetAssets">Get Assets</button>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="container mt-3">
+    <div class="row">
+        <div class="scrollable-table-wrapper">
+            <table class="table-assets">
+                <thead>
+                    <tr>
+                        <th>Asset ID</th>
+                        <th>Asset Code</th>
+                        <th>Asset Name</th>
+                        <th>Asset Photo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (MyModal.AssetList is not null)
+                    {
+                        @foreach (var asset in MyModal.AssetList)
+                        {
+                            <tr>
+                                <td>@asset.TagList.First().TagID</td>
+                                <td>@asset.AssetCode</td>
+                                <td>@asset.AssetName</td>
+                                <td>@asset.AssetPhoto</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+
+            </table>
+        </div>
+        </div>
+    </div>
+</EditForm>
