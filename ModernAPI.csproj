@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\ExcelFiles\**" />
+    <Content Remove="wwwroot\ExcelFiles\**" />
+    <EmbeddedResource Remove="wwwroot\ExcelFiles\**" />
+    <None Remove="wwwroot\ExcelFiles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="wwwroot\DB\IT_Laptops.db" />
+    <Content Remove="wwwroot\DB\IT_Laptops.db-journal" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ExcelDataReader" Version="3.7.0" />
     <PackageReference Include="ExcelDataReader.DataSet" Version="3.7.0" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.119" />

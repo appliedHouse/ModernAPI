@@ -1,5 +1,6 @@
 ﻿using ExcelDataReader;
 using Microsoft.AspNetCore.Components.Forms;
+using ModernAPI.Data;
 using System.Data;
 using System.Data.SQLite;
 using System.Text;
@@ -9,12 +10,12 @@ namespace AppliedAccounts.Models
 {
     public class ImportExcelFile
     {
-        public IBrowserFile ExcelFile { get; set; }
+        public IBrowserFile? ExcelFile { get; set; }
         public DataSet ImportDataSet { get; set; }
         public bool IsImported { get; set; } = false;
         public string MyMessages { get; set; }
-        public string MyMessages { get; set; }
-
+        public string FileName { get; set; }
+        
 
         public ImportExcelFile()
         {
@@ -22,20 +23,26 @@ namespace AppliedAccounts.Models
             ImportDataSet = new DataSet();
             IsImported = false;
             MyMessages = string.Empty;
+            FileName = string.Empty;
+            
         }
 
 
         public ImportExcelFile(IBrowserFile excelFile)
         {
-            var FileName = excelFile.Name;
-            var FileNameSplit = FileName.Split('.');
-            DBFileName = FileNameSplit[0] + ".db";
-
 
             ExcelFile = excelFile;
             ImportDataSet = new DataSet();
             IsImported = false;
             MyMessages = string.Empty;
+            FileName = string.Empty;
+            
+
+            if (excelFile is not null)
+            {
+                FileName = Path.GetFileNameWithoutExtension(excelFile.Name);
+            }
+
         }
 
 
@@ -82,7 +89,7 @@ namespace AppliedAccounts.Models
             finally
             {
                 if (MyMessages.Length == 0) { IsImported = true; } else { IsImported = false; }
-                ImportDataSet = new();
+                //ImportDataSet = new();
             }
         }
 
@@ -96,16 +103,15 @@ namespace AppliedAccounts.Models
             bool _Result = false;
             int _Records = 0;
             string _Path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "DB");
-            string _File = "ImportAssets.db";
             string _GUID = Guid.NewGuid().ToString();
             string _Title = $"Import file {ExcelFile} dated {DateTime.Now}";
             bool _FirstRow = true;
 
             try
             {
-                if (_File.Length > 0)
+                if (FileName.Length > 0)
                 {
-                    var _OldFilePath = Path.Combine(_Path, _File);
+                    var _OldFilePath = Path.Combine(_Path, FileName+".db");
                     if (File.Exists(_OldFilePath)) { File.Delete(_OldFilePath); }
                 }
             }
@@ -115,7 +121,7 @@ namespace AppliedAccounts.Models
             }
 
             string _ConnText = $"";
-            string _ImportDBPath = Path.Combine(_Path, _File);
+            string _ImportDBPath = Path.Combine(_Path, FileName + ".db");
             SQLiteConnection.CreateFile(_ImportDBPath);
             SQLiteConnection _TempDBConnection = new($"Data Source={_ImportDBPath}");
 

@@ -11,8 +11,6 @@
     protected override void OnInitialized()
     {
         Config = _Config;
-        //TokenClass TokenService = new TokenClass(Config);
-        //TokenText = TokenService.GetToken().Result;
     }
 
 
@@ -68,36 +66,45 @@
         </div>
     </div>
 
-    
-<div class="container mt-3">
-    <div class="row">
-        <div class="scrollable-table-wrapper">
-            <table class="table-assets">
-                <thead>
-                    <tr>
-                        <th>Asset ID</th>
-                        <th>Asset Code</th>
-                        <th>Asset Name</th>
-                        <th>Asset Photo</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (MyModal.AssetList is not null)
-                    {
-                        @foreach (var asset in MyModal.AssetList)
-                        {
-                            <tr>
-                                <td>@asset.TagList.First().TagID</td>
-                                <td>@asset.AssetCode</td>
-                                <td>@asset.AssetName</td>
-                                <td>@asset.AssetPhoto</td>
-                            </tr>
-                        }
-                    }
-                </tbody>
 
-            </table>
+    @if (MyMessage.Length > 0)
+    {
+        <div class="container">
+            <div class="alert alert-danger mt-3" role="alert">
+                @MyMessage
+            </div>
         </div>
+    }
+
+    <div class="container mt-3">
+        <div class="row">
+            <div class="scrollable-table-wrapper">
+                <table class="table-assets">
+                    <thead>
+                        <tr>
+                            <th>Asset ID</th>
+                            <th>Asset Code</th>
+                            <th>Asset Name</th>
+                            <th>Asset Photo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (MyModal.AssetList is not null)
+                        {
+                            @foreach (var asset in MyModal.AssetList)
+                            {
+                                <tr>
+                                    <td>@asset.TagList.First().TagID</td>
+                                    <td>@asset.AssetCode</td>
+                                    <td>@asset.AssetName</td>
+                                    <td>@asset.AssetPhoto</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+
+                </table>
+            </div>
         </div>
     </div>
 </EditForm>

@@ -11,7 +11,7 @@
             <button class="btn btn-primary" @onclick="mnuAssets">Assets</button>
         </div>
     </li>
-    <li class="nav-item">
+     @* <li class="nav-item">
         <div class="nav-link">
             <button class="btn btn-primary" @onclick="mnuClass">Class</button>
         </div>
@@ -20,12 +20,17 @@
         <div class="nav-link">
             <button class="btn btn-primary" @onclick="mnuLocation">Location</button>
         </div>
-    </li>
+    </li> *@
     <li class="nav-item">
         <div class="nav-link">
             <button class="btn btn-primary" @onclick="mnuImport">Import</button>
         </div>
     </li>
+    @* <li class="nav-item">
+        <div class="nav-link">
+            <button class="btn btn-primary" @onclick="mnuUpdate">Update</button>
+        </div>
+    </li> *@
 </ul>
 
 
@@ -33,9 +38,10 @@
 @code {
     public void mnuToken() { NavManager.NavigateTo("/Token"); }
     public void mnuAssets() { NavManager.NavigateTo("/Assets"); }
-    public void mnuClass() { NavManager.NavigateTo("/Class"); }
-    public void mnuLocation() { NavManager.NavigateTo("/Location"); }
+    // public void mnuClass() { NavManager.NavigateTo("/Class"); }
+    // public void mnuLocation() { NavManager.NavigateTo("/Location"); }
     public void mnuImport() { NavManager.NavigateTo("/Import"); }
+    // public void mnuUpdate() { NavManager.NavigateTo("/UpdateAssets/IT_Laptops.db"); }
 
 }
 

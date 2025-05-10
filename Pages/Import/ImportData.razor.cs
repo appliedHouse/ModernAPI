@@ -10,12 +10,17 @@ namespace ModernAPI.Pages.Import
     {
         public DownLoadModel MyModel { get; set; } = new();
 
-        public ImportExcelFile ImportExcel { get; set; } = new(null);
+        public ImportExcelFile ImportExcel { get; set; } = new();
         
         public async Task GetExcelFile(InputFileChangeEventArgs e)
         {
             try
             {
+                MyModel.ExcelFileName = e.File.Name;
+                MyModel.SQLiteFileName = GetSQLIteFileName(MyModel.ExcelFileName);
+
+
+
                 MyModel.SpinnerMessage = "Excel file is being loaded.  Wait for some while";
                 MyModel.ShowSpinner = true;
                 MyModel.ExcelFileName = e.File.Name;
@@ -23,9 +28,6 @@ namespace ModernAPI.Pages.Import
 
                 if (e.File is not null)
                 {
-                    
-                   
-
                     ImportExcel = new(e.File);
                     await ImportExcel.ImportDataAsync();        // ImportExcelFile.cs Function
                     MyModel.IsExcelLoaded = true;                       // Excel file has been loaded successfully.
@@ -40,7 +42,7 @@ namespace ModernAPI.Pages.Import
             }
             finally
             {
-                ImportExcel = new();
+                //ImportExcel ??= new();
                 MyModel.TB_Assets =  await ImportDataTable();        // Import Data from DB file into DataTable
                 MyModel.ShowSpinner = false;
                 await InvokeAsync(StateHasChanged);
@@ -48,16 +50,27 @@ namespace ModernAPI.Pages.Import
 
         }
 
+        private string GetSQLIteFileName(string excelFileName)
+        {
+            var FileName = Path.GetFileNameWithoutExtension(excelFileName);
+            var FileExtension = Path.GetExtension(excelFileName);
+            MyModel.ExcelDataSheet = "Data";
+            return FileName + ".db";
+        }
+
         public async Task<DataTable> ImportDataTable()
         {
             MyModel.IsDataTableLoaded = false;
-            string _File = DBFileName;
-            string _Path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "DB", _File);
-            var ConnectionClass = new Connections(_File);
+            //string _Path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "DB", MyModel.SQLiteFileName);
+            var ConnectionClass = new Connections(MyModel.SQLiteFileName);
 
-            SQLiteCommand _Command = new();
+            if(ImportExcel.ImportDataSet.Tables.Count == 0) { return new(); }           // Data Not Found return new DataTable
+
+
+            string FirstDataSheet = ImportExcel.ImportDataSet.Tables[0].TableName;
+            SQLiteCommand _Command = new(); ;
             _Command.Connection = ConnectionClass.MyConnection;
-            _Command.CommandText = "SELECT * FROM [Data]";
+            _Command.CommandText = $"SELECT * FROM [{FirstDataSheet}]";
             SQLiteDataAdapter _Adapter = new(_Command);
             DataSet _DataSet = new();
 
@@ -87,6 +100,8 @@ namespace ModernAPI.Pages.Import
     {
         public string SpinnerMessage { get; set; } = string.Empty;
         public string ExcelFileName { get; set; } = string.Empty;
+        public string ExcelDataSheet { get; set; } = string.Empty;
+        public string SQLiteFileName { get; set; } = string.Empty;
         public bool IsError { get; set; } = false;
         public string ErrorMessage { get; set; } = string.Empty;
         public bool IsExcelLoaded { get; set; }

@@ -1,16 +1,114 @@
 ﻿@page "/Import"
 @using System.Data
+@using ModernAPI.Data
 
 @inject IJSRuntime js
+@inject NavigationManager NavManager
+@inject IConfiguration Config
 
 @code {
+    public int CounterValue { get; set; } = 0;
+    public int SavedValue { get; set; } = 0;
+    public int SkipedValue { get; set; } = 0;
+
+    public bool IsCompleted { get; set; } = false;
+    public ProgressBarClass MyProgress = new ProgressBarClass();
+
     private async Task TriggerFileInput()
     {
         await js.InvokeVoidAsync("triggerFileUpload");
     }
+
+
+    private async void Update()
+    {
+        UpdateAssets UpdateAssetsServce = new UpdateAssets(MyModel.TB_Assets);
+        UpdateAssetsServce.SQLConnectionString = Config.GetConnectionString("SQLServer") ?? "";
+
+        if (UpdateAssetsServce.HasNoError)
+        {
+            foreach (DataRow row in UpdateAssetsServce.DBFile.Rows)
+            {
+                MyProgress = await UpdateAssetsServce.UpdateAssetAsync(row);
+
+                CounterValue = (int)(((double)MyProgress.Counter / MyProgress.Max) * 100);
+                SavedValue = (int)(((double)MyProgress.Saved / MyProgress.Max) * 100);
+                SkipedValue = (int)(((double)MyProgress.Skiped / MyProgress.Max) * 100);
+
+                if (CounterValue >= 100) 
+                { IsCompleted = true; }
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
 }
 
-<h3>Import</h3>
+
+
+<h3 class="col-12 text-center bg-light">IMPORT DATA FROM EXCEL FILE AND UPDATE ASSETS</h3>
+
+
+@if (MyProgress.Counter > 0)
+{
+    if (!IsCompleted)
+    {
+        <div class="container">
+            <div class="row">
+                <div class="alert alert-info">
+                    @MyProgress.Counter records have been updated successfully.
+                </div>
+            </div>
+            <div class="row">
+                <div class="progress">
+                    <div class="progress-bar bg-warning" role="progressbar"
+                         style="width:@CounterValue%;"
+                         aria-valuenow="@MyProgress.Counter"
+                         aria-valuemin="@MyProgress.Min"
+                         aria-valuemax="@MyProgress.Max">
+                        Total @CounterValue%
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="progress">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width:@SavedValue%;"
+                         aria-valuenow="@MyProgress.Saved"
+                         aria-valuemin="@MyProgress.Min"
+                         aria-valuemax="@MyProgress.Max">
+                        Saved @SavedValue%
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="progress">
+                    <div class="progress-bar bg-danger" role="progressbar"
+                         style="width:@SkipedValue%;"
+                         aria-valuenow="@MyProgress.Skiped"
+                         aria-valuemin="@MyProgress.Min"
+                         aria-valuemax="@MyProgress.Max">
+                        Skipped @SkipedValue%
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    else
+    {
+        <div class="row">
+            <div class="alert alert-success">
+                Update Process has been Completed.
+                Total <span style="color:green">@MyProgress.Counter</span>,
+                Saved <span style="color:dodgerblue">@MyProgress.Saved</span>,
+                and Skipped <span style="color:red">@MyProgress.Skiped</span>
+            </div>
+        </div>
+    }
+
+}
+
+
 
 @if (!MyModel.IsExcelLoaded)
 {
@@ -18,10 +116,11 @@
         <div class="d-flex flex-row mb-3">
             <div class="p-2">
                 <button class="btn btn-primary w1" disabled="@(MyModel.IsExcelLoaded ? true : MyModel.ShowSpinner)"
-                title="Upload Excel file" @onclick="TriggerFileInput">
+                        title="Upload Excel file" @onclick="TriggerFileInput">
                     Upload Excel file
                 </button>
                 <InputFile id="inputFile" class="d-none" OnChange="GetExcelFile" />
+
 
 
             </div>
@@ -58,34 +157,68 @@ else
     }
     else
     {
-        if(MyModel.IsDataTableLoaded)
+        if (MyModel.IsDataTableLoaded)
         {
-            <div class="container">
-                <table class="table-assets">
-                    <thead>
-                        <tr>
-                            <th style="width:20%">Tag ID</th>
-                            <th style="width:20%">Name</th>
-                            <th style="width:40%">Location</th>
-                            <th style="width:20%">Code</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if(MyModel.TB_Assets is not null)
-                        {
-                            foreach (DataRow Row in MyModel.TB_Assets.Rows)
+            <div class="container-fluid">
+
+                @if (!IsCompleted)
+                {
+                    <button class="btn btn-warning" @onclick="Update">Update</button>
+                }
+                <div class="table-wrapper">
+                    <table class="table-assets">
+                        <thead>
+                            <tr>
+                                @if (MyModel.TB_Assets is not null)
+                                {
+
+                                    @foreach (DataColumn Column in MyModel.TB_Assets.Columns)
+                                    {
+                                        <th>@Column.ColumnName</th>
+                                    }
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (MyModel.TB_Assets is not null)
                             {
-                                <tr>
-                                    <td>@Row["TagID"]</td>
-                                    <td>@Row["AssetName"]</td>
-                                    <td>@Row["LocationName"]</td>
-                                    <td>@Row["ClassCode"]</td>
-                                </tr>
+                                foreach (DataRow Row in MyModel.TB_Assets.Rows)
+                                {
+                                    <tr>
+                                        @foreach (DataColumn Column in MyModel.TB_Assets.Columns)
+                                        {
+                                            <td>@Row[Column.ColumnName]</td>
+                                        }
+                                    </tr>
+                                }
                             }
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         }
     }
 }
+
+
+<style>
+    .table-wrapper {
+        overflow-x: auto;
+        overflow-y: auto;
+        max-height: calc(100vh - 150px); /* adjust as needed */
+        margin-top: 20px;
+        border: 1px solid #ddd;
+    }
+
+    .table-assets {
+        width: 100%;
+        min-width: 800px; /* adjust depending on your column width */
+        border-collapse: collapse;
+    }
+
+        .table-assets th, .table-assets td {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+</style>

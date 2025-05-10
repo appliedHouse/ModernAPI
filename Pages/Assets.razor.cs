@@ -8,10 +8,11 @@ namespace ModernAPI.Pages
     {
         public AssetsModal MyModal { get; set; } = new AssetsModal();
         public string TokenText { get; set; } = string.Empty;
-        public string BaseUrl { get; set; } = string.Empty; 
+        public string BaseUrl { get; set; } = string.Empty;
         public string Endpoint { get; set; } = string.Empty;
         public string APIUrl { get; set; } = string.Empty;
-        
+        public string MyMessage { get; set; } = string.Empty;
+
         public HttpClient _HttpClient { get; set; } = new HttpClient();
 
         public async void GetAssets()
@@ -36,7 +37,7 @@ namespace ModernAPI.Pages
 
             var Response = await _HttpClient.SendAsync(Request);
 
-            if(Response.IsSuccessStatusCode)
+            if (Response.IsSuccessStatusCode)
             {
                 var resultText = await Response.Content.ReadAsStringAsync();
 
@@ -45,16 +46,27 @@ namespace ModernAPI.Pages
                     PropertyNameCaseInsensitive = true
                 });
 
-                var assets = result?.ReturnedValue;
-                if(assets is not null)
+                if (result!.IsSuccess)
                 {
-                    return assets;
+                    // Handle success response
+                    var assets = result?.ReturnedValue;
+                    if (assets is not null)
+                    {
+                        return assets;
+                    }
+                    else
+                    {
+
+                        return [];
+                    }
                 }
+
                 else
                 {
+                    MyMessage = result?.Message ?? "";
                     return [];
                 }
-                
+
             }
             else
             {
@@ -69,19 +81,18 @@ namespace ModernAPI.Pages
         {
 
             //https://localhost/api/api/Asset/GetPagedAssets?ClassificationId=1471PageNum=0&PageSize=100
-
-            // ClassificationId=1471&PageNum=0&PageSize=100
+                        
 
             var _Text = new StringBuilder();
 
-            if(MyModal.locationID > 0)
+            if (MyModal.locationID > 0)
             {
                 _Text.Append($"LocationId={MyModal.locationID}");
             }
 
             if (MyModal.ClassID > 0)
             {
-                if(_Text.Length>0) { _Text.Append('&'); }
+                if (_Text.Length > 0) { _Text.Append('&'); }
 
                 _Text.Append($"ClassificationId={MyModal.ClassID}");
             }
@@ -111,7 +122,7 @@ namespace ModernAPI.Pages
             public DateTime LastSyncDate { get; set; }
             public int PageNum { get; set; } = 0;
             public int PageSize { get; set; } = 100;
-            public List<Asset> AssetList {get; set;}
+            public List<Asset> AssetList { get; set; }
         }
 
         public class AssetResponse
