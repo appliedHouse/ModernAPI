@@ -22,8 +22,11 @@
 
     private async void Update()
     {
+
+
         UpdateAssets UpdateAssetsServce = new UpdateAssets(MyModel.TB_Assets);
         UpdateAssetsServce.SQLConnectionString = Config.GetConnectionString("SQLServer") ?? "";
+
 
         if (UpdateAssetsServce.HasNoError)
         {
@@ -38,6 +41,10 @@
                 if (CounterValue >= 100) 
                 { IsCompleted = true; }
                 await InvokeAsync(StateHasChanged);
+
+                AddCustodian custodianService = new(UpdateAssetsServce.GetConnection()!,UpdateAssetsServce.DBFile);
+                custodianService.UpdateCustodian();
+
             }
         }
     }

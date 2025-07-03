@@ -1,18 +1,11 @@
 ﻿@page "/Assets"
 @using ModernAPI.Data
-@inject IConfiguration _Config
-@inject NavigationManager NavManager
+@inject IConfiguration Config
+
 
 
 @code {
-    public IConfiguration Config { get; set; }
-
-
-    protected override void OnInitialized()
-    {
-        Config = _Config;
-    }
-
+  
 
 }
 

@@ -30,7 +30,7 @@ namespace ModernAPI.Data
 
         public string val_Manufacturer { get; set; }
         public string val_Model { get; set; }
-        public bool val_Private { get; set; }
+        public string val_Private { get; set; }
 
         public int _Def_ManufactureID = 0;         // Class [CustomFieldsDefinition] Manufacture ID
         public int _Def_Model = 0;                 // Class [CustomFieldsDefinition] Model ID
@@ -84,7 +84,7 @@ namespace ModernAPI.Data
             var _ExcelEmployeeName = ExcelRow["Display Name"].ToString() ?? "";
             val_Manufacturer = ExcelRow["Brand"].ToString() ?? "";
             val_Model = ExcelRow["Model"].ToString() ?? "";
-            val_Private = false;
+            val_Private = string.Empty;
 
 
             if (_ExcelTagID.Length > 0)
@@ -311,7 +311,7 @@ namespace ModernAPI.Data
             _SQLAction = string.Empty;
             _Query = new();
             _Command = new SqlCommand(_Query.ToString(), GetConnection());
-            _Query.AppendLine($"SELECT * FROM [CustomFieldsValue] WHERE [AssetID]={_AssetID} AND [FieldID]={_Def_Private}");
+            _Query.AppendLine($"SELECT * FROM [CustomFieldsValue] WHERE [AssetID]={_AssetID} AND [FieldID]='{_Def_Private}'");
             Command = new SqlCommand(_Query.ToString(), GetConnection());
             _Adapter = new SqlDataAdapter(Command);
             _DataSet = new DataSet();

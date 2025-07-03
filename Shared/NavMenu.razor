@@ -30,6 +30,14 @@
         </li>
     }
 
+    @if (IsMnuImport)
+    {
+        <li class="nav-item">
+            <div class="nav-link">
+                <button class="btn btn-primary" @onclick="mnuCustody">Custodian</button>
+            </div>
+        </li>
+    }
 
 </ul>
 
@@ -56,4 +64,5 @@
     public void mnuToken() { NavManager.NavigateTo("/Token"); }
     public void mnuAssets() { NavManager.NavigateTo("/Assets"); }
     public void mnuImport() { NavManager.NavigateTo("/Import"); }
+    public void mnuCustody() { NavManager.NavigateTo("/Custody"); }
 }

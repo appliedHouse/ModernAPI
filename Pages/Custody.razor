@@ -1,0 +1,136 @@
+﻿@page "/Custody"
+@using ModernAPI.Data
+@using System.Data
+
+@inject IConfiguration Config
+@inject IJSRuntime js
+
+@code {
+    public bool IsCompleted { get; set; } = false;
+
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private async Task TriggerFileInput()
+    {
+        await js.InvokeVoidAsync("triggerFileUpload");
+    }
+
+}
+
+
+@if (!downloadModel.IsError)
+{
+
+}
+
+@if (!downloadModel.IsExcelLoaded)
+{
+    <div class="container">
+        <div class="d-flex flex-row mb-3">
+            <div class="p-2">
+                <button class="btn btn-primary w1" disabled="@(downloadModel.IsExcelLoaded ? true : downloadModel.ShowSpinner)"
+                title="Upload Excel file" @onclick="TriggerFileInput">
+                    Upload Excel file
+                </button>
+                <InputFile id="inputFile" class="d-none" OnChange="GetExcelFile" />
+
+
+
+            </div>
+            <div class="p-2">
+                <label>@downloadModel.ExcelFileName</label>
+            </div>
+
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="p-2">
+        <label>Excel File has been loaded successfully.</label>
+    </div>
+}
+
+
+@if (!IsCompletedCustody)
+{
+    @if (downloadModel.ShowSpinner)
+    {
+        <button class="btn btn-primary" type="button" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span class="visually-hidden">@downloadModel.SpinnerMessage</span>
+        </button>
+    }
+    else
+    {
+
+        @if (downloadModel.IsError)
+        {
+            <div class="alert alert-danger ">
+                @downloadModel.ErrorMessage
+            </div>
+        }
+        else
+        {
+            if (downloadModel.IsDataTableLoaded)
+            {
+                <div class="container-fluid">
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <button class="btn btn-primary float-end mb-3" @onclick="AddCustody">Assign Custodian for Assets</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="table-assets">
+                            <thead>
+                                <tr>
+                                    @if (downloadModel.TB_Assets is not null)
+                                    {
+
+                                        @foreach (DataColumn Column in downloadModel.TB_Assets.Columns)
+                                        {
+                                            <th>@Column.ColumnName</th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (downloadModel.TB_Assets is not null)
+                                {
+                                    foreach (DataRow Row in downloadModel.TB_Assets.Rows)
+                                    {
+                                        <tr>
+                                            @foreach (DataColumn Column in downloadModel.TB_Assets.Columns)
+                                            {
+                                                <td>@Row[Column.ColumnName]</td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+    }
+}
+else
+{
+    <div class="list-group list-group-flush">
+        @foreach(var message in CustodianModel.MyMessage)
+        {
+            <li class="list-group-item">@message</li>
+        }
+    </div>
+
+
+    
+}
