@@ -17,8 +17,8 @@ namespace ModernAPI.Data
         public int Saved { get; set; } = 0;
         public int Skiped { get; set; } = 0;
 
-        public List<string> TagSaved { get; set; } 
-         public List<string> TagSkiped {get; set;} 
+        public List<string> TagSaved { get; set; }
+        public List<string> TagSkiped { get; set; }
 
 
 
@@ -43,7 +43,7 @@ namespace ModernAPI.Data
         {
             TotalRows = _DataTable.Rows.Count;
             DBFile = _DataTable;
-            
+
             MyProgressBar = new();
             MyProgressBar.Counter = 0;
             MyProgressBar.Min = 0;
@@ -79,7 +79,8 @@ namespace ModernAPI.Data
             _Query.Append("LEFT JOIN [Assets] [A] ON [A].[AssetID] = [T].[AssetID]");
             _Query.Append("WHERE TagID = @TagID");
 
-            var _ExcelTagID = ExcelRow["Tag No."].ToString() ?? "";
+            var _ExcelTagID = ExcelRow["Tag_ID"].ToString() ?? "";
+            var _ExcelAssetCode = ExcelRow["Code"].ToString() ?? "";
             var _ExcelEmailID = ExcelRow["Email"].ToString() ?? "";
             var _ExcelEmployeeName = ExcelRow["Display Name"].ToString() ?? "";
             val_Manufacturer = ExcelRow["Brand"].ToString() ?? "";
@@ -100,6 +101,9 @@ namespace ModernAPI.Data
                 var _EmailID = string.Empty;
                 var _GUID = Guid.NewGuid().ToString();
                 var _EmployeeName = string.Empty;
+                var _SerialNo = string.Empty;
+                var _AssetCode = 0;
+
 
                 _Adapter.Fill(_DataSet);
                 if (_DataSet.Tables.Count > 0)
@@ -109,7 +113,12 @@ namespace ModernAPI.Data
                     {
                         _AssetFound = true;
                         _AssetID = (int)_DataTable.Rows[0]["AssetID"];
+                        _SerialNo = _DataTable.Rows[0]["ManufactureSN"] == DBNull.Value ? "" 
+                                  : _DataTable.Rows[0]["ManufactureSN"].ToString();
+                        _AssetCode = (int)_DataTable.Rows[0]["AssetCode"];
 
+
+                        // Insert Employee Record in SQL Database, if not exist (No update of Employee)
                         EmployeeGUID = Guid.NewGuid().ToString();
                         DepartmentGUID = Guid.NewGuid().ToString();
 
@@ -124,13 +133,19 @@ namespace ModernAPI.Data
                 {
                     // Asset Table Update
 
+                    
+                    if (!string.IsNullOrEmpty(ExcelRow["Serial Number"].ToString())) { _SerialNo = ExcelRow["Serial Number"].ToString(); }
+                    int.TryParse(ExcelRow["Serial Number"].ToString(), out _AssetCode);
+
                     _Query = new();
                     _Query.AppendLine("UPDATE [Assets] ");
-                    _Query.AppendLine("SET [ManufactureSN]=@ManufactureSN");
+                    _Query.AppendLine("SET [AssetCode]=@AssetCode,");
+                    _Query.AppendLine("[ManufactureSN]=@ManufactureSN ");
                     _Query.AppendLine("WHERE [AssetID] = @AssetID");
 
                     Command = new SqlCommand(_Query.ToString(), GetConnection());
                     Command.Parameters.AddWithValue("@AssetID", _AssetID);
+                    Command.Parameters.AddWithValue("@AssetCode", ExcelRow["Code"].ToString());
                     Command.Parameters.AddWithValue("@ManufactureSN", ExcelRow["Serial Number"].ToString() ?? "");
 
                     var No = Command.ExecuteNonQuery();
@@ -141,8 +156,8 @@ namespace ModernAPI.Data
                         MyProgressBar.Saved++;
                         TagSaved.Add(_ExcelTagID);
                     }
-                    
-                    
+
+
                 }
                 else
                 {
@@ -189,7 +204,7 @@ namespace ModernAPI.Data
             Command = new SqlCommand(_Query.ToString(), GetConnection());
             _Adapter = new SqlDataAdapter(Command);
             _DataSet = new DataSet();
-            
+
             _Adapter.Fill(_DataSet, "CustomFieldsValue");
             if (_DataSet.Tables.Count > 0)
             {
@@ -202,10 +217,10 @@ namespace ModernAPI.Data
                     _FieldValueID = (int)_DataSet.Tables["CustomFieldsValue"]!.Rows[0]["FieldValueID"];
                     _SQLAction = "Update";
                 }
-            }    
-                
+            }
 
-            
+
+
             if (_SQLAction == "Update")
             {
                 _Query = new();
@@ -315,7 +330,7 @@ namespace ModernAPI.Data
             Command = new SqlCommand(_Query.ToString(), GetConnection());
             _Adapter = new SqlDataAdapter(Command);
             _DataSet = new DataSet();
-            
+
             _Adapter.Fill(_DataSet, "CustomFieldsValue");
             if (_DataSet.Tables.Count > 0)
             {
@@ -395,7 +410,7 @@ namespace ModernAPI.Data
                 }
             }
 
-            
+
         }
 
 

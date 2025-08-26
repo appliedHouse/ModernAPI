@@ -27,6 +27,7 @@
         UpdateAssets UpdateAssetsServce = new UpdateAssets(MyModel.TB_Assets);
         UpdateAssetsServce.SQLConnectionString = Config.GetConnectionString("SQLServer") ?? "";
 
+        MyProgress.Counter = UpdateAssetsServce.Counter;
 
         if (UpdateAssetsServce.HasNoError)
         {
