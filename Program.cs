@@ -1,12 +1,13 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-
+using ModernAPI.Data;
+using ModernAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<AuthTokenService>();
 
 
 var app = builder.Build();

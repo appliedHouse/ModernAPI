@@ -1,16 +1,18 @@
 ﻿@page "/Assets"
 @using ModernAPI.Data
+@using ModernAPI.Services
+
 @inject IConfiguration Config
-
-
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthTokenService TokenService
+@inject NavigationManager NavManager
 
 @code {
-  
-
+  bool Stop = true;
 }
 
 
-<h2>ASSETS</h2>
+<h2 class="SubHeading">ASSETS' LIST</h2>
 
 <EditForm Model="MyModal">
     <div class="container">
@@ -79,6 +81,7 @@
                             <th>Asset Code</th>
                             <th>Asset Name</th>
                             <th>Asset Photo</th>
+                            <th>Info</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,10 +90,15 @@
                             @foreach (var asset in MyModal.AssetList)
                             {
                                 <tr>
-                                    <td>@asset.TagList.First().TagID</td>
+                                    <td>@asset.TagList?.First().TagID</td>
                                     <td>@asset.AssetCode</td>
                                     <td>@asset.AssetName</td>
                                     <td>@asset.AssetPhoto</td>
+                                    <td>
+                                        <button class="btn btn-link" @onclick="(()=>ShowAssetInfo(asset.AssetID))">
+                                            <i class="bi bi-box-seam me-2"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             }
                         }

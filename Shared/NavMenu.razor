@@ -39,6 +39,17 @@
         </li>
     }
 
+    @if (IsCustomFields)
+    {
+        <li class="nav-item">
+            <div class="nav-link">
+                <button class="btn btn-primary" @onclick="mnuCustomFields">Custom Fields</button>
+            </div>
+        </li>
+
+    }
+
+
 </ul>
 
 @code {
@@ -46,6 +57,7 @@
     public bool IsMnuToken { get; set; } = false;
     public bool IsMnuAssets { get; set; } = false;
     public bool IsMnuImport { get; set; } = false;
+    public bool IsCustomFields { get; set; } = false;
 
 
     protected override void OnInitialized()
@@ -53,6 +65,7 @@
         IsMnuToken = Config.GetValue<bool>("IsToken");
         IsMnuAssets = Config.GetValue<bool>("IsAssets");
         IsMnuImport = Config.GetValue<bool>("IsImport");
+        IsCustomFields = Config.GetValue<bool>("IsCustomFields");
 
     }
 
@@ -65,4 +78,5 @@
     public void mnuAssets() { NavManager.NavigateTo("/Assets"); }
     public void mnuImport() { NavManager.NavigateTo("/Import"); }
     public void mnuCustody() { NavManager.NavigateTo("/Custody"); }
+    public void mnuCustomFields() { NavManager.NavigateTo("/CustomFields"); }
 }

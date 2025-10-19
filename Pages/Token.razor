@@ -18,23 +18,16 @@
 
     }
 
-    public async Task GetToken()
-    {
-        TokenText = await TokenService.GetToken();
-    }
+    
 
 }
 
 <div class="container">
-    <div class="row">
-        <div class="col-3">
-            <button class="btn btn-primary" @onclick="GetToken">Get Token</button>
-        </div>
-    </div>
+    
     <div class="row mt-3">
         <div class="col-12">
             <div class="w-75 text-wrap text-break border p-2">
-                <p class="m-0">@TokenText</p>
+                <p class="m-0">@TokenService.TokenText</p>
             </div>
         </div>
     </div>

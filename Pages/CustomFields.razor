@@ -1,0 +1,94 @@
+﻿@page "/CustomFields"
+
+@using ModernAPI.Data
+@using ModernAPI.Services
+
+@inject IConfiguration Config
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthTokenService TokenService
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        MyModal = new();
+    }
+
+}
+
+<h2 class="SubHeading">Custom Fields Value</h2>
+
+<EditForm Model="MyModal">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputNumber id="assetID" class="form-control" @bind-Value="MyModal.AssetID" />
+                    <label for="assetID">Asset ID</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputText id="serialNo" class="form-control" @bind-Value="MyModal.SerialNum" />
+                    <label for="serialNo">Serial No.</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="form-floating">
+                    <InputText id="tagID" class="form-control" @bind-Value="MyModal.TagID" />
+                    <label for="tagID">Tag ID</label>
+                </div>
+            </div>
+            <div class="col-3">
+                <button class="btn btn-success" @onclick="GetAPIData">Get API Data</button>
+            </div>
+        </div>
+
+       
+    </div>
+
+    @if (MyMessage.Length > 0)
+    {
+        <div class="container">
+            <div class="alert alert-danger mt-3" role="alert">
+                @MyMessage
+            </div>
+        </div>
+    }
+
+    <div class="container mt-3">
+        <div class="row">
+            <div class="scrollable-table-wrapper">
+                <table class="table-assets">
+                    <thead>
+                        <tr>
+                            <th>Asset ID</th>
+                            <th>Value ID</th>
+                            <th>Field ID</th>
+                            <th>Arabic</th>
+                            <th>English</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (MyModal.ListCFV is not null)
+                        {
+                            @foreach (var asset in MyModal.ListCFV)
+                            {
+                                <tr>
+                                    <td>@asset.AssetID</td>
+                                    <td>@asset.FieldValueID</td>
+                                    <td>@asset.FieldID</td>
+                                    <td>@asset.TitleAR</td>
+                                    <td>@asset.TitleEN</td>
+                                    <td>@asset.FieldValue</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div>
+</EditForm>

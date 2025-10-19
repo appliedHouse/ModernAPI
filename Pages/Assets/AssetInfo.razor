@@ -1,0 +1,125 @@
+﻿@page "/AssetsInfo"
+@page "/AssetsInfo/{AssetID:int}"
+@using ModernAPI.Data
+@using ModernAPI.Services
+@using ModernAPI.Models
+
+
+@inject IJSRuntime JS
+@inject IConfiguration Config
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthTokenService TokenService
+@inject NavigationManager NavManager
+
+@code {}
+
+<h3>Asset Management</h3>
+
+@if (assets == null)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+<div class="modal-body container bg-light p-2">
+    <EditForm Model="CurrentAsset" OnValidSubmit="SaveAsset">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Asset Name *</label>
+                    <InputText class="form-control" @bind-Value="CurrentAsset.AssetName" />
+                    <ValidationMessage For="@(() => CurrentAsset.AssetName)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Asset Code</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.AssetCode" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Price</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.Price" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Cost Price</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.CostPrice" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Sale Price</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.SalePrice" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Quantity</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.Quantity" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Weight</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.Weight" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Manufacture SN</label>
+                    <InputText class="form-control" @bind-Value="CurrentAsset.ManufactureSN" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Extra Cost</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.ExtraUnitCost" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">Profit</label>
+                    <InputNumber class="form-control" @bind-Value="CurrentAsset.ProfitUnitAmount" />
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="mb-3">
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" @bind-Value="CurrentAsset.IsRecieved" />
+                    <label class="form-check-label">Is Received</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <button type="button" class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+
+        
+    </EditForm>
+</div>
+    
+}
+

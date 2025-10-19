@@ -1,6 +1,4 @@
 ﻿using System.Text;
-using System;
-using ModernAPI.Pages;
 using System.Text.Json;
 
 namespace ModernAPI.Data
@@ -26,10 +24,39 @@ namespace ModernAPI.Data
             UserName = Config.GetValue<string>("ApiUser") ?? "";
             Password = Config.GetValue<string>("ApiPassword") ?? "";
             Url = "https://localhost/API/api/Auth/GetToken";
+            TokenText = GetToken();
         }
 
+        private string GetToken()
+        {
+            var _Text = string.Empty;
+            using var client = new HttpClient();
 
-        public async Task<string> GetToken()
+            var json = $"{{\"username\":\"{UserName}\",\"password\":\"{Password}\"}}";
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = client.PostAsync(Url, content).Result;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var token = response.Content.ReadAsStringAsync().Result;
+                _Text = token;
+            }
+            else
+            {
+                _Text = string.Empty;
+                var error = response.Content.ReadAsStringAsync().Result;
+                throw new Exception($"Error: {response.StatusCode}, {error}");
+            }
+
+
+            var jsonDoc = JsonDocument.Parse(_Text);
+            TokenText = jsonDoc.RootElement.GetProperty("token").GetString() ?? "";
+
+            return TokenText;
+        }
+
+        public async Task<string> GetTokenAsync()
         {
             var _Text = string.Empty;
             using var client = new HttpClient();
