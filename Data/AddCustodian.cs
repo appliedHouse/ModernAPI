@@ -46,11 +46,18 @@ namespace ModernAPI.Data
             if (MyConnection.State != ConnectionState.Open) { MyConnection.Open(); }
             if (ExcelTable == null || ExcelTable.Rows.Count == 0) { return; }
 
+            var excluded = new[] { "No", "Code", "Brand", "Model", "Serial Number", "IsPrivate", "Display Name", "Email", "Tag_ID" };
+
+            bool NoHeaderFound = !ExcelTable.Columns.Cast<DataColumn>()
+                .Any(c => !excluded.Any(e => c.ColumnName.Contains(e)));
+
+            if(NoHeaderFound) { MyMessage.Add("Excel Sheet Header are not Match with [No,Code,Brand,Model,Serial Number,IsPrivate,Display Name,Email,Tag_ID]"); return; }
+
             foreach (DataRow Row in ExcelTable.Rows)
             {
                 var _EmailID = Row.Field<string>("Email") ?? ""; if (string.IsNullOrEmpty(_EmailID)) { continue; }
                 var _EmployeeName = Row.Field<string>("Display Name") ?? "";
-                var _AssetTagID = Row.Field<string>("Tag No.") ?? "";
+                var _AssetTagID = Row.Field<string>("Tag_ID") ?? "";
                 var _EmployeeID = GetEmployeeID(_EmailID);
                 MaxFormID = MaxAsetFormID();
 
@@ -67,7 +74,7 @@ namespace ModernAPI.Data
 
                 MyGUID = Guid.NewGuid().ToString();
                 UpdateTransaction(MyGUID, $"Asset {AssetID} Form Add Custodian {_EmailID} {_EmployeeName}");
-                             
+
 
 
                 #region SQL Query
@@ -146,7 +153,7 @@ namespace ModernAPI.Data
                 #endregion
 
                 var Records = MyCommand.ExecuteNonQuery();
-                if (Records>0)
+                if (Records > 0)
                 {
                     MyMessage.Add($"INSERT INTO [AssetForm] Sucessfully... FormID {MaxFormID}");
 
@@ -214,12 +221,12 @@ namespace ModernAPI.Data
 
 
             var _AssetID = AssetRow!.Field<int>("AssetID");
-            if(_AssetID != 0)
+            if (_AssetID != 0)
             {
                 // Add Transaction ID 
                 var _Guid = Guid.NewGuid().ToString();
                 var _Title = $"Excel: Update asset {_AssetID} GuardianShip Form Id {MaxFormID}";
-                UpdateTransaction(_Guid, _Title) ;
+                UpdateTransaction(_Guid, _Title);
 
                 //Query for Update Asset Record
                 var _Query = new StringBuilder();
@@ -230,7 +237,7 @@ namespace ModernAPI.Data
                 _Query.Append($"WHERE [AssetID]={_AssetID}");
                 MyCommand = new SqlCommand(_Query.ToString(), MyConnection);
                 var Records = MyCommand.ExecuteNonQuery();
-                if(Records <= 0)
+                if (Records <= 0)
                 {
                     MyMessage.Add($"UPDATE [Assets] NOT Sucessful... FormID {MaxFormID}");
                 }
@@ -520,7 +527,7 @@ namespace ModernAPI.Data
             MyCommand.Parameters.AddWithValue("@TransactionType", 1);
 
             var Records = MyCommand.ExecuteNonQuery();
-            if(Records > 0)
+            if (Records > 0)
             {
                 MyMessage.Add($"{Records}: Add {_GUID}, _Title {_Title}");
             }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using System.Data;
 using System.Data.SQLite;
+using System.Linq;
 using System.Text;
 
 namespace AppliedAccounts.Models
@@ -13,7 +14,7 @@ namespace AppliedAccounts.Models
         public bool IsImported { get; set; } = false;
         public string MyMessages { get; set; }
         public string FileName { get; set; }
-        
+
 
         public ImportExcelFile()
         {
@@ -22,7 +23,7 @@ namespace AppliedAccounts.Models
             IsImported = false;
             MyMessages = string.Empty;
             FileName = string.Empty;
-            
+
         }
 
 
@@ -34,7 +35,7 @@ namespace AppliedAccounts.Models
             IsImported = false;
             MyMessages = string.Empty;
             FileName = string.Empty;
-            
+
 
             if (excelFile is not null)
             {
@@ -56,6 +57,8 @@ namespace AppliedAccounts.Models
                 var _Directory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ExcelFiles");
                 if (!Directory.Exists(_Directory)) { Directory.CreateDirectory(_Directory); }
 
+                var conf = new ExcelDataSetConfiguration { ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true } };
+
                 var _ExcelFile = Path.Combine(_Directory, ExcelFile.Name);
 
                 if (File.Exists(_ExcelFile)) { File.Delete(_ExcelFile); }
@@ -68,7 +71,7 @@ namespace AppliedAccounts.Models
                 using (var reader = ExcelReaderFactory.CreateReader(stream))
                 {
 
-                    ImportDataSet = reader.AsDataSet();
+                    ImportDataSet = reader.AsDataSet(conf);
 
                     if (ImportDataSet is not null)
                     {
@@ -98,18 +101,34 @@ namespace AppliedAccounts.Models
 
         internal bool SaveInTable(DataSet importDataSet)
         {
+            #region Validate the Header of DataTable
+
+            if (importDataSet.Tables.Count > 0)
+            {
+                var Headings = new[] { "No", "Code", "Brand", "Model", "Serial Number", "IsPrivate", "Display Name", "Email", "Tag_ID" };
+                var _Columns = importDataSet.Tables[0].Columns.Cast<DataColumn>().ToList();
+                var _Valid = true;
+                foreach (DataColumn Column in _Columns)
+                {
+                    if (Headings.Any(e => e.ToLower() == Column.ColumnName.ToLower())) { continue; }
+                    _Valid = false;
+                }
+
+                if (!_Valid) { return false; }
+            }
+            #endregion
+
             bool _Result = false;
             int _Records = 0;
             string _Path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "DB");
             string _GUID = Guid.NewGuid().ToString();
             string _Title = $"Import file {ExcelFile} dated {DateTime.Now}";
-            bool _FirstRow = true;
 
             try
             {
                 if (FileName.Length > 0)
                 {
-                    var _OldFilePath = Path.Combine(_Path, FileName+".db");
+                    var _OldFilePath = Path.Combine(_Path, FileName + ".db");
                     if (File.Exists(_OldFilePath)) { File.Delete(_OldFilePath); }
                 }
             }
@@ -129,42 +148,18 @@ namespace AppliedAccounts.Models
             {
                 foreach (DataTable _Table in importDataSet.Tables)
                 {
-                    _FirstRow = true;
                     var _Text = new StringBuilder();
                     _Text.Append($"CREATE TABLE [{_Table.TableName}] (");
 
                     string _TableName = _Table.TableName;
                     string _LastColumn = _Table.Columns[_Table.Columns.Count - 1].ColumnName;
 
-                    if (_FirstRow)
+                    foreach (DataColumn _Column in _Table.Columns)
                     {
-                        int _ColumnNo = 1;
-                        DataRow _FirstDataRow = _Table.Rows[0];
-                        foreach (DataColumn _Column in _Table.Columns)
-                        {
-                            string? _ColumnValue = _FirstDataRow[_Column.ColumnName].ToString();
+                        _Text.Append($"[{_Column.ColumnName}] ");
+                        _Text.Append($"NVARCHAR");
 
-                            if (string.IsNullOrEmpty(_ColumnValue))
-                            {
-                                _ColumnValue = $"Column{_ColumnNo}";
-                                _ColumnNo++;
-                            }
-                            _Text.Append($"[{_ColumnValue}] ");
-                            _Text.Append($"NVARCHAR");
-
-                            if (_Column.ColumnName != _LastColumn) { _Text.Append(','); }
-                        }
-                    }
-                    else
-                    {
-                        foreach (DataColumn _Column in _Table.Columns)
-                        {
-                            _Text.AppendLine($"[{_Column.ColumnName}] ");
-                            _Text.Append($"NVARCHAR");
-                            //_Text.Append($"[{_Column.DataType}]");
-
-                            if (_Column.ColumnName != _LastColumn) { _Text.Append(','); }
-                        }
+                        if (_Column.ColumnName != _LastColumn) { _Text.Append(','); }
                     }
 
                     _Text.Append(')');
@@ -173,8 +168,6 @@ namespace AppliedAccounts.Models
 
                     foreach (DataRow _Row in _Table.Rows)
                     {
-                        if (_FirstRow) { _FirstRow = false; continue; }
-
 
                         _Text.Clear();
                         _Text.Append($"INSERT INTO [{_Table.TableName}] VALUES (");

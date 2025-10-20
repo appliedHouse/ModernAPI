@@ -74,99 +74,106 @@ namespace ModernAPI.Data
             // Edit / Updata Asset Data from Excel Sheet Data
             // Save Asset Data to AssetInspector
 
-            var _Query = new StringBuilder();
-            _Query.Append("SELECT * FROM [AssetTag] [T] ");
-            _Query.Append("LEFT JOIN [Assets] [A] ON [A].[AssetID] = [T].[AssetID]");
-            _Query.Append("WHERE TagID = @TagID");
+            var excluded = new[] { "No", "Code", "Brand", "Model", "Serial Number", "IsPrivate", "Display Name", "Email", "Tag_ID" };
 
-            var _ExcelTagID = ExcelRow["Tag_ID"].ToString() ?? "";
-            var _ExcelAssetCode = ExcelRow["Code"].ToString() ?? "";
-            var _ExcelEmailID = ExcelRow["Email"].ToString() ?? "";
-            var _ExcelEmployeeName = ExcelRow["Display Name"].ToString() ?? "";
-            val_Manufacturer = ExcelRow["Brand"].ToString() ?? "";
-            val_Model = ExcelRow["Model"].ToString() ?? "";
-            val_Private = string.Empty;
+            bool NoHeaderFound = !ExcelRow.Table.Columns.Cast<DataColumn>()
+                .Any(c => !excluded.Any(e => c.ColumnName.Contains(e)));
 
-
-            if (_ExcelTagID.Length > 0)
+            if (NoHeaderFound) { return null; }
             {
-                Command = new SqlCommand(_Query.ToString(), GetConnection());
-                Command.Parameters.AddWithValue("@TagID", _ExcelTagID);
+                var _Query = new StringBuilder();
+                _Query.Append("SELECT * FROM [AssetTag] [T] ");
+                _Query.Append("LEFT JOIN [Assets] [A] ON [A].[AssetID] = [T].[AssetID]");
+                _Query.Append("WHERE TagID = @TagID");
 
-                var _Adapter = new SqlDataAdapter(Command);
-                var _DataSet = new DataSet();
-
-                var _AssetFound = false;
-                var _AssetID = 0;
-                var _EmailID = string.Empty;
-                var _GUID = Guid.NewGuid().ToString();
-                var _EmployeeName = string.Empty;
-                var _SerialNo = string.Empty;
-                var _AssetCode = 0;
+                var _ExcelTagID = ExcelRow["Tag_ID"].ToString() ?? "";
+                var _ExcelAssetCode = ExcelRow["Code"].ToString() ?? "";
+                var _ExcelEmailID = ExcelRow["Email"].ToString() ?? "";
+                var _ExcelEmployeeName = ExcelRow["Display Name"].ToString() ?? "";
+                val_Manufacturer = ExcelRow["Brand"].ToString() ?? "";
+                val_Model = ExcelRow["Model"].ToString() ?? "";
+                val_Private = string.Empty;
 
 
-                _Adapter.Fill(_DataSet);
-                if (_DataSet.Tables.Count > 0)
+                if (_ExcelTagID.Length > 0)
                 {
-                    var _DataTable = _DataSet.Tables[0];
-                    if (_DataTable.Rows.Count > 0)
-                    {
-                        _AssetFound = true;
-                        _AssetID = (int)_DataTable.Rows[0]["AssetID"];
-                        _SerialNo = _DataTable.Rows[0]["ManufactureSN"] == DBNull.Value ? "" 
-                                  : _DataTable.Rows[0]["ManufactureSN"].ToString();
-                        _AssetCode = (int)_DataTable.Rows[0]["AssetCode"];
-
-
-                        // Insert Employee Record in SQL Database, if not exist (No update of Employee)
-                        EmployeeGUID = Guid.NewGuid().ToString();
-                        DepartmentGUID = Guid.NewGuid().ToString();
-
-                        UpdateEmployee(_ExcelEmailID, _ExcelEmployeeName, EmployeeGUID);
-
-                    }
-                }
-
-                // Asset Save to AssetInspector.DB
-
-                if (_AssetFound && _AssetID > 0)
-                {
-                    // Asset Table Update
-
-                    
-                    if (!string.IsNullOrEmpty(ExcelRow["Serial Number"].ToString())) { _SerialNo = ExcelRow["Serial Number"].ToString(); }
-                    int.TryParse(ExcelRow["Serial Number"].ToString(), out _AssetCode);
-
-                    _Query = new();
-                    _Query.AppendLine("UPDATE [Assets] ");
-                    _Query.AppendLine("SET [AssetCode]=@AssetCode,");
-                    _Query.AppendLine("[ManufactureSN]=@ManufactureSN ");
-                    _Query.AppendLine("WHERE [AssetID] = @AssetID");
-
                     Command = new SqlCommand(_Query.ToString(), GetConnection());
-                    Command.Parameters.AddWithValue("@AssetID", _AssetID);
-                    Command.Parameters.AddWithValue("@AssetCode", ExcelRow["Code"].ToString());
-                    Command.Parameters.AddWithValue("@ManufactureSN", ExcelRow["Serial Number"].ToString() ?? "");
+                    Command.Parameters.AddWithValue("@TagID", _ExcelTagID);
 
-                    var No = Command.ExecuteNonQuery();
+                    var _Adapter = new SqlDataAdapter(Command);
+                    var _DataSet = new DataSet();
 
-                    if (No > 0)
+                    var _AssetFound = false;
+                    var _AssetID = 0;
+                    var _EmailID = string.Empty;
+                    var _GUID = Guid.NewGuid().ToString();
+                    var _EmployeeName = string.Empty;
+                    var _SerialNo = string.Empty;
+                    var _AssetCode = 0;
+
+
+                    _Adapter.Fill(_DataSet);
+                    if (_DataSet.Tables.Count > 0)
                     {
-                        UpdateCustomFields(_AssetID);
-                        MyProgressBar.Saved++;
-                        TagSaved.Add(_ExcelTagID);
+                        var _DataTable = _DataSet.Tables[0];
+                        if (_DataTable.Rows.Count > 0)
+                        {
+                            _AssetFound = true;
+                            _AssetID = (int)_DataTable.Rows[0]["AssetID"];
+                            _SerialNo = _DataTable.Rows[0]["ManufactureSN"] == DBNull.Value ? ""
+                                      : _DataTable.Rows[0]["ManufactureSN"].ToString();
+                            _AssetCode = (int)_DataTable.Rows[0]["AssetCode"];
+
+
+                            // Insert Employee Record in SQL Database, if not exist (No update of Employee)
+                            EmployeeGUID = Guid.NewGuid().ToString();
+                            DepartmentGUID = Guid.NewGuid().ToString();
+
+                            UpdateEmployee(_ExcelEmailID, _ExcelEmployeeName, EmployeeGUID);
+
+                        }
                     }
 
+                    // Asset Save to AssetInspector.DB
+
+                    if (_AssetFound && _AssetID > 0)
+                    {
+                        // Asset Table Update
+
+
+                        if (!string.IsNullOrEmpty(ExcelRow["Serial Number"].ToString())) { _SerialNo = ExcelRow["Serial Number"].ToString(); }
+                        int.TryParse(ExcelRow["Serial Number"].ToString(), out _AssetCode);
+
+                        _Query = new();
+                        _Query.AppendLine("UPDATE [Assets] ");
+                        _Query.AppendLine("SET [AssetCode]=@AssetCode,");
+                        _Query.AppendLine("[ManufactureSN]=@ManufactureSN ");
+                        _Query.AppendLine("WHERE [AssetID] = @AssetID");
+
+                        Command = new SqlCommand(_Query.ToString(), GetConnection());
+                        Command.Parameters.AddWithValue("@AssetID", _AssetID);
+                        Command.Parameters.AddWithValue("@AssetCode", ExcelRow["Code"].ToString());
+                        Command.Parameters.AddWithValue("@ManufactureSN", ExcelRow["Serial Number"].ToString() ?? "");
+
+                        var No = Command.ExecuteNonQuery();
+
+                        if (No > 0)
+                        {
+                            UpdateCustomFields(_AssetID);
+                            MyProgressBar.Saved++;
+                            TagSaved.Add(_ExcelTagID);
+                        }
+
+
+                    }
+                    else
+                    {
+                        TagSkiped.Add(_ExcelTagID);
+                        MyProgressBar.Skiped++;
+                    }
 
                 }
-                else
-                {
-                    TagSkiped.Add(_ExcelTagID);
-                    MyProgressBar.Skiped++;
-                }
-
             }
-
             MyProgressBar.Counter++;
             await Task.Delay(100);
             return MyProgressBar;
