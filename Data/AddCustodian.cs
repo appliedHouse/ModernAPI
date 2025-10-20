@@ -1,8 +1,5 @@
-﻿using Microsoft.SqlServer.Server;
-using ModernAPI.Pages;
-using System.Data;
-using System.Data.SqlClient;
-using System.Diagnostics;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
 using System.Text;
 
 namespace ModernAPI.Data
@@ -10,9 +7,8 @@ namespace ModernAPI.Data
     public class AddCustodian
     {
         public SqlConnection MyConnection { get; set; }
-        public DataTable ExcelTable { get; set; }
-        //public DataTable EmployeeTable { get; set; }
         public SqlCommand MyCommand { get; set; }
+        public DataTable ExcelTable { get; set; }
         public string _AssetTag = string.Empty; // Asset Tag ID
         public string MyGUID = string.Empty;
         public int MaxFormID = 0;

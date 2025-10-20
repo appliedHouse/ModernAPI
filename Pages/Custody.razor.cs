@@ -1,10 +1,9 @@
 ﻿using ModernAPI.Data;
-using System.Data.SqlClient;
 using System.Data;
 using ModernAPI.Pages.Import;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Data.Entity.Infrastructure;
-using AppliedAccounts.Models;
+using ImportExcel;
+
 using System.Data.SQLite;
 
 
@@ -67,7 +66,13 @@ namespace ModernAPI.Pages
 
                 if (e.File is not null)
                 {
-                    ImportExcel = new(e.File);
+                    //ImportExcel = new(e.File);
+
+                    ImportExcel = new(); ;
+                    ImportExcel.ExcelFile = e.File;
+                    ImportExcel.Headings = ["No", "Code", "Brand", "Model", "Serial Number", "IsPrivate", "Display Name", "Email", "Tag_ID"];
+                    ImportExcel.ExportPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ExcelFiles");
+
                     await ImportExcel.ImportDataAsync();        // ImportExcelFile.cs Function
                     downloadModel.IsExcelLoaded = true;                       // Excel file has been loaded successfully.
                 }

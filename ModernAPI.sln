@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModernAPI", "ModernAPI.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppliedRegistry", "..\AppliedRegistry\AppliedRegistry.csproj", "{22D2FC2C-FC00-4779-8F4C-AC1B78EFA8A1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportExcelFile", "..\ImportExcelFile\ImportExcelFile.csproj", "{0834B092-2D14-472A-AC89-28A2ED4D26CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{22D2FC2C-FC00-4779-8F4C-AC1B78EFA8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22D2FC2C-FC00-4779-8F4C-AC1B78EFA8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22D2FC2C-FC00-4779-8F4C-AC1B78EFA8A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0834B092-2D14-472A-AC89-28A2ED4D26CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0834B092-2D14-472A-AC89-28A2ED4D26CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0834B092-2D14-472A-AC89-28A2ED4D26CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0834B092-2D14-472A-AC89-28A2ED4D26CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using System.Data;
 using System.Data.SQLite;
-using System.Linq;
 using System.Text;
 
 namespace AppliedAccounts.Models
@@ -12,8 +11,12 @@ namespace AppliedAccounts.Models
         public IBrowserFile? ExcelFile { get; set; }
         public DataSet ImportDataSet { get; set; }
         public bool IsImported { get; set; } = false;
-        public string MyMessages { get; set; }
-        public string FileName { get; set; }
+        public List<string> MyMessages { get; set; }
+        public string FileName => Path.GetFileNameWithoutExtension(ExcelFile.Name);
+        public string ImportPath { get; set; }
+        public string ExportPath { get; set; }
+
+        public List<string> Headings = [];
 
 
         public ImportExcelFile()
@@ -21,45 +24,25 @@ namespace AppliedAccounts.Models
             ExcelFile = null;
             ImportDataSet = new DataSet();
             IsImported = false;
-            MyMessages = string.Empty;
-            FileName = string.Empty;
-
+            MyMessages = [];
         }
-
-
-        public ImportExcelFile(IBrowserFile excelFile)
-        {
-
-            ExcelFile = excelFile;
-            ImportDataSet = new DataSet();
-            IsImported = false;
-            MyMessages = string.Empty;
-            FileName = string.Empty;
-
-
-            if (excelFile is not null)
-            {
-                FileName = Path.GetFileNameWithoutExtension(excelFile.Name);
-            }
-
-        }
-
-
 
         #region Import Data From Excel file into DataSet
 
         public async Task ImportDataAsync()
         {
+            IsImported = false;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);          // Enable Page encoders for Excel files.
             try
             {
-                MyMessages = string.Empty;
-                var _Directory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ExcelFiles");
-                if (!Directory.Exists(_Directory)) { Directory.CreateDirectory(_Directory); }
+
+                if (string.IsNullOrEmpty(ExcelFile.Name)) { MyMessages.Add("Excel File name is null"); return; }
+
+
 
                 var conf = new ExcelDataSetConfiguration { ConfigureDataTable = _ => new ExcelDataTableConfiguration { UseHeaderRow = true } };
 
-                var _ExcelFile = Path.Combine(_Directory, ExcelFile.Name);
+                var _ExcelFile = Path.Combine(ExportPath, ExcelFile.Name);
 
                 if (File.Exists(_ExcelFile)) { File.Delete(_ExcelFile); }
 
@@ -75,22 +58,20 @@ namespace AppliedAccounts.Models
 
                     if (ImportDataSet is not null)
                     {
-                        SaveInTable(ImportDataSet);
+                        IsImported = SaveInTable(ImportDataSet);
+                        if (IsImported)
+                        {
+                            MyMessages.Add("ERROR: Excel file not imported in DataTable.");
+                        }
                     }
                 }
-
 
                 if (File.Exists(_ExcelFile)) { File.Delete(_ExcelFile); }
             }
             catch (Exception error)
             {
-                MyMessages = error.Message;
+                MyMessages.Add(error.Message);
 
-            }
-            finally
-            {
-                if (MyMessages.Length == 0) { IsImported = true; } else { IsImported = false; }
-                //ImportDataSet = new();
             }
         }
 
@@ -105,7 +86,6 @@ namespace AppliedAccounts.Models
 
             if (importDataSet.Tables.Count > 0)
             {
-                var Headings = new[] { "No", "Code", "Brand", "Model", "Serial Number", "IsPrivate", "Display Name", "Email", "Tag_ID" };
                 var _Columns = importDataSet.Tables[0].Columns.Cast<DataColumn>().ToList();
                 var _Valid = true;
                 foreach (DataColumn Column in _Columns)
@@ -134,7 +114,7 @@ namespace AppliedAccounts.Models
             }
             catch (Exception error)
             {
-                MyMessages = error.Message;
+                MyMessages.Add(error.Message);
             }
 
             string _ConnText = $"";
